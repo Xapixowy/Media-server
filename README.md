@@ -1,4 +1,4 @@
-# Media server:
+# Media server
 
 ## Containers:
 
