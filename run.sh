@@ -6,6 +6,7 @@ gid=$(id -g)
 default_path="/home/$username"
 
 generate_env() {
+   clear
    echo "##############################################################"
    echo "#  __  __          _ _                                       #"
    echo "# |  \/  | ___  __| (_) __ _   ___  ___ _ ____   _____ _ __  #"
@@ -121,7 +122,22 @@ generate_env() {
    echo "Path $media_path is correct!"
    clear
 
-   echo "8. Summary"
+   echo "8. Extracting default config files..."
+   echo "Do you want to extract default config files?"
+   echo "If you choose no, you will have to configure the containers yourself"
+   read -p "Extract default config files? [y/n]: " -n 1 -r
+   echo ""
+   if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo "Extracting default config files..."
+      sudo mkdir -p "$config_path/.docker-configs"
+      sudo tar -xzf docker-configs.tar.gz -C "$config_path/.docker-configs"
+      echo "Default config files extracted!"
+   else
+      echo "Skipping extracting default config files..."
+   fi
+   echo ""
+
+   echo "9. Summary"
    if sudo docker network inspect "$network_name" >/dev/null 2>&1; then
       echo "Network exists: true"
    else
@@ -138,22 +154,21 @@ generate_env() {
       clear
       generate_env
    fi
-   clear
 }
 generate_env
 
-echo "9. Generating .env file"
+echo "10. Generating .env file"
 env_content="USERNAME=$username\nUID=$uid\nGID=$gid\nCONFIG_PATH=$config_path\nMEDIA_PATH=$media_path\nTIMEZONE=Europe/Warsaw"
 echo -e "$env_content" > .env
 echo ".env file was generated"
 echo ""
 
-echo "10. Creating docker containers"
+echo "11. Creating docker containers"
 sudo docker-compose up -d
 echo "Containers created!"
 echo ""
 
-echo "11. Setting up permissions"
+echo "12. Setting up permissions"
 sudo chown -R "$uid":"$gid" "$config_path/.docker-configs"
 sudo chown -R "$uid":"$gid" "$media_path/@Media-server"
 echo "Permissions set!"
@@ -175,9 +190,14 @@ echo ""
 echo "All done!"
 echo ""
 echo "You can now access your services at:"
-echo "- Aduardhome: http://localhost:3000"
+echo "- Aduardhome: http://localhost:8080"
 echo "- Qbittorrent: http://localhost:8112"
 echo "- Prowlarr: http://localhost:9696"
 echo "- Radarr: http://localhost:7878"
 echo "- Sonarr: http://localhost:8989"
 echo "- Bazarr: http://localhost:6767"
+echo ""
+echo "Default credentials (only if you chose extracting default config files):"
+echo "- Username: xapixowy"
+echo "- Password: Password123!"
+echo ""
