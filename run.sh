@@ -93,7 +93,28 @@ generate_env() {
    echo "Network created!"
    echo ""
 
-   echo "6. Choosing config path..."
+   echo "6. Choosing user for containers..."
+   echo "Current user: $username"
+   echo "Do you want to change user for containers?"
+   read -p "Change user? [y/n]: " -n 1 -r
+   echo ""
+   if [[ $REPLY =~ ^[Yy]$ ]]; then
+      check_user_exists() {
+         read -p "Type a user for your containers: " username
+         if [[ ! $(getent passwd "$username") ]]; then
+            echo "User does not exist!"
+            check_user_exists
+         fi
+      }
+      check_user_exists
+      uid=$(id -u "$username" 2>/dev/null)
+      gid=$(id -g "$username" 2>/dev/null)
+      default_path="/home/$username"
+   fi
+   echo "User $username is correct!"
+   echo ""
+
+   echo "7. Choosing config path..."
    echo "In this path, a new folder .docker-configs will be created if it does not exist"
    echo "If the folder already exists, it will be used"
    check_config_path() {
@@ -108,7 +129,7 @@ generate_env() {
    echo "Path $config_path is correct!"
    echo ""
 
-   echo "7. Choosing media path..."
+   echo "8. Choosing media path..."
    echo "In this path, a new folder @Media-server will be created if it does not exist"
    echo "If the folder already exists, it will be used"
    check_media_path() {
@@ -120,9 +141,9 @@ generate_env() {
    }
    check_media_path
    echo "Path $media_path is correct!"
-   clear
+   echo ""
 
-   echo "8. Extracting default config files..."
+   echo "9. Extracting default config files..."
    echo "Do you want to extract default config files?"
    echo "If you choose no, you will have to configure the containers yourself"
    read -p "Extract default config files? [y/n]: " -n 1 -r
@@ -135,9 +156,9 @@ generate_env() {
    else
       echo "Skipping extracting default config files..."
    fi
-   echo ""
+   clear
 
-   echo "9. Summary"
+   echo "10. Summary"
    if sudo docker network inspect "$network_name" >/dev/null 2>&1; then
       echo "Network exists: true"
    else
@@ -157,19 +178,20 @@ generate_env() {
 }
 generate_env
 
-echo "10. Generating .env file"
+echo "11. Generating .env file"
 env_content="USERNAME=$username\nUID=$uid\nGID=$gid\nCONFIG_PATH=$config_path\nMEDIA_PATH=$media_path\nTIMEZONE=Europe/Warsaw"
 echo -e "$env_content" > .env
 echo ".env file was generated"
 echo ""
 
-echo "11. Creating docker containers"
+echo "12. Creating docker containers"
 sudo docker-compose up -d
 echo "Containers created!"
 echo ""
 
-echo "12. Setting up permissions"
+echo "13. Setting up permissions"
 sudo chown -R "$uid":"$gid" "$config_path/.docker-configs"
+sudo chown -R root:root "$config_path/.docker-configs/adguardhome"
 sudo chown -R "$uid":"$gid" "$media_path/@Media-server"
 echo "Permissions set!"
 echo ""
