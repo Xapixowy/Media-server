@@ -4,7 +4,7 @@ username=$(whoami)
 uid=$(id -u)
 gid=$(id -g)
 default_path="/home/$username"
-docker-composer="1"
+docker_composer="1"
 
 generate_env() {
    clear
@@ -32,10 +32,10 @@ generate_env() {
 
    echo "2. Checking if docker compose is installed..."
    if [ -x "$(command -v docker-compose)" ]; then
-      docker-composer="1"
+      docker_composer="1"
       echo "Docker compose is installed."
    elif [ -x "$(command -v docker compose)" ]; then
-      docker-composer="2"
+      docker_composer="2"
       echo "Docker compose is installed (variant with space)."
    else
       echo "Docker compose is not installed!"
@@ -199,9 +199,9 @@ echo ".env file was generated"
 echo ""
 
 echo "13. Creating docker containers"
-if [[ $docker-composer == "1" ]]; then
+if [[ $docker_composer == "1" ]]; then
    sudo docker-compose up -f docker-compose.yml -d --build
-elif [[ $docker-composer == "2" ]]; then
+elif [[ $docker_composer == "2" ]]; then
    sudo docker compose up -f docker-compose.yml -d --build
 fi
 echo "Containers created!"
