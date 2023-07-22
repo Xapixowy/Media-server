@@ -33,7 +33,7 @@ generate_env() {
    if [ -x "$(command -v docker-compose)" ]; then
       echo "Docker compose is installed."
    elif [ -x "$(command -v docker compose)" ]; then
-      echo "Docker compose is installed (variant with space)."
+      echo "/home/michaloxsDocker compose is installed (variant with space)."
    else
       echo "Docker compose is not installed!"
       echo "Follow the documentation to install docker-compose: https://docs.docker.com/compose/install/"
@@ -129,6 +129,7 @@ generate_env() {
       fi
    }
    check_config_path
+   sudo mkdir -p "$config_path/.docker-configs"
    echo "Path $config_path is correct!"
    echo ""
 
@@ -143,6 +144,7 @@ generate_env() {
       fi
    }
    check_media_path
+   sudo mkdir -p "$media_path/@Media-server"
    echo "Path $media_path is correct!"
    echo ""
 
@@ -153,7 +155,6 @@ generate_env() {
    echo ""
    if [[ $REPLY =~ ^[Yy]$ ]]; then
       echo "Extracting default config files..."
-      sudo mkdir -p "$config_path/.docker-configs"
       sudo tar -xzf docker-configs.tar.gz -C "$config_path/.docker-configs"
       echo "Default config files extracted!"
    else
