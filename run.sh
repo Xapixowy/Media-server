@@ -29,13 +29,16 @@ generate_env() {
    echo "Docker is installed!"
    echo ""
 
-   echo "2. Checking if docker-compose is installed..."
-   if ! sudo docker-compose --version >/dev/null 2>&1; then
-      echo "Docker-compose is not installed!"
+   echo "2. Checking if docker compose is installed..."
+   if [ -x "$(command -v docker-compose)" ]; then
+      echo "Docker compose is installed."
+   elif [ -x "$(command -v docker compose)" ]; then
+      echo "Docker compose is installed (variant with space)."
+   else
+      echo "Docker compose is not installed!"
       echo "Follow the documentation to install docker-compose: https://docs.docker.com/compose/install/"
       exit 1
    fi
-   echo "Docker-compose is installed!"
    echo ""
 
    # check if containers exists
