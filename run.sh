@@ -36,7 +36,7 @@ generate_env() {
       echo "Docker compose is installed."
    elif [ -x "$(command -v docker compose)" ]; then
       docker-composer="2"
-      echo "/home/michaloxsDocker compose is installed (variant with space)."
+      echo "Docker compose is installed (variant with space)."
    else
       echo "Docker compose is not installed!"
       echo "Follow the documentation to install docker-compose: https://docs.docker.com/compose/install/"
@@ -44,8 +44,15 @@ generate_env() {
    fi
    echo ""
 
-   # check if containers exists
-   echo "3. Checking if docker containers exists..."
+   echo "3. Checking if dependencies are installed..."
+    if ! sudo apt-get install -y curl tar >/dev/null 2>&1; then
+        echo "Dependencies are not installed!"
+        sudo apt-get install -y curl tar
+    fi
+   echo "Dependencies are installed!"
+   echo ""
+
+   echo "4. Checking if docker containers exists..."
    if sudo docker ps -a | grep -q "adguardhome"; then
       echo "Adguardhome container exists!"
       echo "Stopping and removing adguardhome container..."
@@ -85,7 +92,7 @@ generate_env() {
    echo "Containers does not exist!"
    echo ""
 
-   echo "4. Checking if docker network exists..."
+   echo "5. Checking if docker network exists..."
    if sudo docker network inspect "$network_name" >/dev/null 2>&1; then
       echo "Network $network_name already exists! Deleting..."
       sudo docker network rm "$network_name"
@@ -93,13 +100,13 @@ generate_env() {
    echo "Network $network_name does not exist!"
    echo ""
 
-   echo "5. Creating docker network..."
+   echo "6. Creating docker network..."
    echo "Creating network $network_name..."
    sudo docker network create -d bridge "$network_name" --subnet=169.0.0.0/28
    echo "Network created!"
    echo ""
 
-   echo "6. Choosing user for containers..."
+   echo "7. Choosing user for containers..."
    echo "Current user: $username"
    echo "Do you want to change user for containers?"
    read -p "Change user? [y/n]: " -n 1 -r
@@ -120,7 +127,7 @@ generate_env() {
    echo "User $username is correct!"
    echo ""
 
-   echo "7. Choosing config path..."
+   echo "8. Choosing config path..."
    echo "In this path, a new folder .docker-configs will be created if it does not exist"
    echo "If the folder already exists, it will be used"
    check_config_path() {
@@ -136,7 +143,7 @@ generate_env() {
    echo "Path $config_path is correct!"
    echo ""
 
-   echo "8. Choosing media path..."
+   echo "9. Choosing media path..."
    echo "In this path, a new folder @Media-server will be created if it does not exist"
    echo "If the folder already exists, it will be used"
    check_media_path() {
@@ -151,7 +158,7 @@ generate_env() {
    echo "Path $media_path is correct!"
    echo ""
 
-   echo "9. Extracting default config files..."
+   echo "10. Extracting default config files..."
    echo "Do you want to extract default config files?"
    echo "If you choose no, you will have to configure the containers yourself"
    read -p "Extract default config files? [y/n]: " -n 1 -r
@@ -165,7 +172,7 @@ generate_env() {
    fi
    clear
 
-   echo "10. Summary"
+   echo "11. Summary"
    if sudo docker network inspect "$network_name" >/dev/null 2>&1; then
       echo "Network exists: true"
    else
@@ -185,22 +192,22 @@ generate_env() {
 }
 generate_env
 
-echo "11. Generating .env file"
+echo "12. Generating .env file"
 env_content="USERNAME=$username\nUID=$uid\nGID=$gid\nCONFIG_PATH=$config_path\nMEDIA_PATH=$media_path\nTIMEZONE=Europe/Warsaw"
 echo -e "$env_content" > .env
 echo ".env file was generated"
 echo ""
 
-echo "12. Creating docker containers"
+echo "13. Creating docker containers"
 if [[ $docker-composer == "1" ]]; then
-   sudo docker-compose up -d
+   sudo docker-compose up -f docker-compose.yml -d --build
 elif [[ $docker-composer == "2" ]]; then
-   sudo docker compose up -d
+   sudo docker compose up -f docker-compose.yml -d --build
 fi
 echo "Containers created!"
 echo ""
 
-echo "13. Setting up permissions"
+echo "14. Setting up permissions"
 sudo chown -R "$uid":"$gid" "$config_path/.docker-configs"
 sudo chown -R root:root "$config_path/.docker-configs/adguardhome"
 sudo chown -R "$uid":"$gid" "$media_path/@Media-server"
