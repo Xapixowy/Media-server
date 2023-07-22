@@ -200,9 +200,9 @@ echo ""
 
 echo "13. Creating docker containers"
 if [[ $docker_composer == "1" ]]; then
-   sudo docker-compose up -f docker-compose.yml -d --build
+   sudo docker-compose up -d --build
 elif [[ $docker_composer == "2" ]]; then
-   sudo docker compose up -f docker-compose.yml -d --build
+   sudo docker compose up -d --build
 fi
 echo "Containers created!"
 echo ""
